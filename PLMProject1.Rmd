@@ -4,18 +4,246 @@ date: "Saturday, February 21, 2015"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Project Description
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
 
-```{r}
-summary(cars)
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har.
+
+The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases. 
+
+1. Your submission should consist of a link to a Github repo with your R markdown and compiled HTML file describing your analysis. Please constrain the text of the writeup to < 2000 words and the number of figures to be less than 5. It will make it easier for the graders if you submit a repo with a gh-pages branch so the HTML page can be viewed online (and you always want to make it easy on graders :-).
+
+2. You should also apply your machine learning algorithm to the 20 test cases available in the test data above. Please submit your predictions in appropriate format to the programming assignment for automated grading. See the programming assignment for additional details. 
+
+## Model creation plan
+
+1. Read data
+2. Perform exploratory data analisis
+3. Define error rate
+4. Create data partition
+4. Create model. On training set pick features and pick prediction function.
+5. Apply in testing
+6. Save answers
+
+```{r modelcreation}
+
+library(caret)
+setwd("D:/Data/personal/Cursos/08 Practical Machine Learning/PMLproject1")
+
+training <- read.csv("pml-training.csv")
+testing <- read.csv("pml-testing.csv")
+
+# create new dataset without missing data
+isNaCols<-colSums(is.na(training))
+
+newtraining <- training[,!isNaCols] 
+#summary(newtraining)
+
+nsv <- nearZeroVar(newtraining,saveMetrics=TRUE)
+
+# columns with incomplete data due to div by cero and near cero var
+# also in test NA
+
+colDivByCero <- 
+        
+        c("amplitude_yaw_forearm","skewness_yaw_forearm","kurtosis_yaw_forearm"
+          
+          ,"amplitude_yaw_dumbbell","skewness_yaw_dumbbell","skewness_yaw_belt"
+          
+          ,"min_yaw_forearm","max_yaw_forearm","skewness_pitch_forearm"
+          
+          ,"skewness_roll_forearm","kurtosis_roll_forearm","kurtosis_picth_forearm"
+          
+          ,"kurtosis_roll_dumbbell","skewness_yaw_arm","skewness_pitch_arm"
+          
+          ,"kurtosis_roll_arm","kurtosis_picth_arm","kurtosis_yaw_arm"
+          
+          ,"skewness_roll_arm","amplitude_yaw_belt","skewness_roll_belt"
+          
+          ,"kurtosis_yaw_dumbbell" ,"kurtosis_yaw_belt","new_window"
+          
+          ,"kurtosis_roll_belt","skewness_roll_belt", "kurtosis_picth_dumbbell"
+          
+          ,"skewness_roll_dumbbell","kurtosis_picth_belt"
+          
+          ,"max_yaw_belt"
+          ,"max_yaw_belt.1"
+          ,"max_yaw_belt.2"
+          ,"max_yaw_belt.3"
+          ,"max_yaw_belt.4"
+          ,"max_yaw_belt.5"
+          ,"max_yaw_belt.6"
+          ,"max_yaw_belt.7"
+          ,"max_yaw_belt.8"
+          ,"max_yaw_belt.9"
+          ,"max_yaw_belt.10"
+          ,"max_yaw_belt.11"
+          ,"max_yaw_belt.12"
+          ,"max_yaw_belt.13"
+          ,"max_yaw_belt.14"
+          ,"max_yaw_belt.15"
+          ,"max_yaw_belt.16"
+          ,"max_yaw_belt.17"
+          ,"max_yaw_belt.18"
+          ,"max_yaw_belt.19"
+          ,"max_yaw_belt.20"
+          ,"max_yaw_belt.21"
+          ,"max_yaw_belt.22"
+          ,"max_yaw_belt.23"
+          ,"max_yaw_belt.24"
+          ,"max_yaw_belt.25"
+          ,"max_yaw_belt.26"
+          ,"max_yaw_belt.27"
+          ,"max_yaw_belt.28"
+          ,"max_yaw_belt.29"
+          ,"max_yaw_belt.30"
+          ,"max_yaw_belt.31"
+          ,"max_yaw_belt.32"
+          ,"max_yaw_belt.33"
+          ,"max_yaw_belt.34"
+          ,"max_yaw_belt.35"
+          ,"max_yaw_belt.36"
+          ,"max_yaw_belt.37"
+          ,"max_yaw_belt.38"
+          ,"max_yaw_belt.39"
+          ,"max_yaw_belt.40"
+          ,"max_yaw_belt.41"
+          ,"max_yaw_belt.42"
+          ,"max_yaw_belt.43"
+          ,"max_yaw_belt.44"
+          ,"max_yaw_belt.45"
+          ,"max_yaw_belt.46"
+          ,"max_yaw_belt.47"
+          ,"max_yaw_belt.48"
+          ,"max_yaw_belt.49"
+          ,"max_yaw_belt.50"
+          ,"max_yaw_belt.51"
+          ,"max_yaw_belt.52"
+          ,"max_yaw_belt.53"
+          ,"max_yaw_belt.54"
+          ,"max_yaw_belt.55"
+          ,"max_yaw_belt.56"
+          ,"max_yaw_belt.57"
+          ,"max_yaw_belt.58"
+          ,"max_yaw_belt.59"
+          ,"max_yaw_belt.60"
+          ,"max_yaw_belt.61"
+          ,"max_yaw_belt.62"
+          ,"max_yaw_belt.63"
+          ,"max_yaw_belt.64"
+          ,"max_yaw_belt.65"
+          ,"max_yaw_belt.66"
+          ,"max_yaw_belt.67"
+          ,"max_yaw_belt.68"
+          ,"max_yaw_belt.69"
+          ,"max_yaw_belt.70"
+          ,"max_yaw_belt.71"
+          ,"max_yaw_belt.72"
+          ,"max_yaw_belt.73"
+          ,"max_yaw_belt.74"
+          ,"max_yaw_belt.75"
+          ,"max_yaw_belt.76"
+          ,"max_yaw_belt.77"
+          ,"max_yaw_belt.78"
+          ,"max_yaw_belt.79"
+          ,"max_yaw_belt.80"
+          ,"max_yaw_belt.81"
+          ,"max_yaw_belt.82"
+          ,"max_yaw_belt.83"
+          ,"max_yaw_belt.84"
+          ,"max_yaw_belt.85"
+          ,"max_yaw_belt.86"
+          ,"max_yaw_belt.87"
+          ,"max_yaw_belt.88"
+          ,"max_yaw_belt.89"
+          ,"max_yaw_belt.90"
+          ,"max_yaw_belt.91"
+          ,"max_yaw_belt.92"
+          ,"max_yaw_belt.93"
+          ,"max_yaw_belt.94"
+          ,"max_yaw_belt.95"
+          ,"max_yaw_belt.96"
+          ,"max_yaw_belt.97"
+          ,"max_yaw_belt.98"
+          ,"max_yaw_belt.99"
+          
+          ,"skewness_roll_belt.1" 
+          ,"min_yaw_belt" 
+          ,"kewness_pitch_dumbbell" 
+          ,"max_yaw_dumbbell" 
+          ,"min_yaw_dumbbell" 
+          ,"skewness_pitch_dumbbell"
+          
+        )
+
+
+finaltrainingCols <- colnames(newtraining)
+finaltrainingColsIndex<-finaltrainingCols %in% colDivByCero
+finaltrainingCols<-finaltrainingCols[!finaltrainingColsIndex]
+finaltraining <- newtraining[,finaltrainingCols]
+
+finaltestingColsIndex <- colSums(is.na(testing))
+
+finaltestingCols <- colnames(testing[,!finaltrainingColsIndex])
+finaltestingColsIndex <- finaltestingCols %in% finaltrainingCols
+
+
+names(testing)[names(testing) == 'problem_id'] <- 'classe'
+
+finaltesting <- testing[,finaltrainingCols]
+
+
+#summary(finaltraining)
+#summary(finaltesting)
+
+set.seed(310874)
+
+
+# create model
+
+# Partition for crossvalidation
+inTrain <- createDataPartition(y=finaltraining$classe, p=0.5, list=FALSE)
+finaltrainingTrain <- finaltraining[inTrain,] 
+finaltrainingTest <- finaltraining[-inTrain,] 
+
+#summary(finaltrainingTrain)
+
+modelFit <- train(classe ~.,data=finaltrainingTrain, method="rpart")
+modelFit
+
+# prediction
+
+#predictions <- predict(modelFit,newdata=finaltrainingTest)
+#predictions
+
+# Applying to test set
+
+finaltesting <- testing[,finaltrainingCols]
+
+predictionsFinal <- predict(modelFit,newdata=finaltesting)
+predictionsFinal
+
+
 ```
 
-You can also embed plots, for example:
 
-```{r, echo=FALSE}
-plot(cars)
+```{r writeanswers, echo = FALSE}
+
+
+#setwd("D:/Data/personal/Cursos/08 Practical Machine Learning/PMLproject1")
+
+
+#pml_write_files = function(x){
+#  n = length(x)
+#  for(i in 1:n){
+#    filename = paste0("problem_id_",i,".txt")
+#    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+#  }
+#}
+
+#pml_write_files(answers)
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
